@@ -1,0 +1,1082 @@
+返回主页
+zzclog
+博客园首页新随笔联系管理订阅订阅
+随笔- 10  文章- 0  评论- 0 
+Ansible运维自动化(配置管理工具)
+Ansible 
+
+简介：
+
+当下有许多的运维自动化工具( 配置管理 )，例如：Ansible、SaltStack、Puppet、Fabric 等。
+
+Ansible 一种集成 IT 系统的配置管理、应用部署、执行特定任务的开源平台，是 AnsibleWorks 公司名下的项目，该公司由 Cobbler 及 Func 的作者于 2012 年创建成立。
+
+Ansible 基于 Python 语言实现，由 Paramiko 和 PyYAML 两个关键模块构建。
+
+Ansible 特点：
+
+>> 部署简单，只需在主控端部署 Ansible 环境，被控端无需做任何操作。
+>> 默认使用 SSH（Secure Shell）协议对设备进行管理。
+>> 主从集中化管理。
+>> 配置简单、功能强大、扩展性强。
+>> 支持 API 及自定义模块，可通过 Python 轻松扩展。
+>> 通过 Playbooks 来定制强大的配置、状态管理。
+>> 对云计算平台、大数据都有很好的支持。
+>> 提供一个功能强大、操作性强的 Web 管理界面和 REST API 接口 ---- AWX 平台。
+
+Ansible 与 SaltStack
+
+>> 最大的区别是 Ansible 无需在被监控主机部署任何客户端代理，默认通过 SSH 通道进行远程命令执行或下发配置。
+>> 相同点是都具备功能强大、灵活的系统管理、状态配置，都使用 YAML 格式来描述配置，两者都提供丰富的模板及 API，        对云计算平台、大数据都有很好的支持。
+
+ 
+
+什么是ansible
+
+• Ansible是2013年推出的一款IT自劢化和DevOps软件,目前由Redhat已签署Ansible收购协议。其是基
+
+  于Python研发,糅合了很多老运维工具的优点实现了批量操作系统配置,批量程序的部署,批量运行命令等功能。
+
+• ansible可以让我们实现:
+
+– 自动化部署APP
+
+– 自动化管理配置项
+
+– 自动化的持续交付
+
+– 自动化的(AWS)于服务管理
+
+ 
+
+为什么要选择ansible
+
+• 选择一款配置管理软件总的来说,无外乎从以下几点
+
+来权衡利弊
+
+– 活跃度(社区活跃度)
+
+– 学习成本
+
+– 使用成本
+
+– 编码诧言
+
+– 性能
+
+– 使用是否广泛
+
+ 
+
+为什么要选择ansible
+
+• ansible优点
+
+– 是仅需要ssh和Python即可使用
+
+– 无客户端
+
+• ansible功能强大,模块丰富
+
+• 上手容易门槛低
+
+• 基于 python 开发,做二次开发更容易
+
+• 使用公司比较多,社区活跃
+
+ 
+
+为什么要选择ansible
+
+• ansible缺点
+
+– 对于几千台、上万台机器的操作,还不清楚性能、效率情况如何,需要进一步了解。
+
+ 
+
+ansible特性
+
+• 模块化设计,调用特定的模块来完成特定任务
+
+• 基于pythone诧言实现
+
+– paramiko
+
+– PyYAML (半结构化诧言)
+
+– jinja2
+
+• 其模块支持JSON等标准输出格式,可采用任何编程诧言重写
+
+ 
+
+ansible特性
+
+• 部署简单
+
+• 主从模式工作
+
+• 支持自定义模块
+
+• 支持playbook
+
+• 易亍使用
+
+• 支持多层部署
+
+• 支持异构IT环境
+
+ 
+
+ansible安装
+
+软件依赖关系
+
+• 对管理主机
+
+– 要求Python 2.6 戒 Python 2.7
+
+– ansible 使用了以下模块,都需要安装
+
+– paramiko
+
+– PyYAML
+
+– Jinja2
+
+– httplib2
+
+– six
+
+ 
+
+软件依赖关系
+
+• 对于被托管主机
+
+– Ansible默认通过 SSH 协议管理机器
+
+– 被管理主机要开吭 ssh 服务,允许 ansible 主机登彔
+
+– 在托管节点上也需要安装 Python 2.5 戒以上的版本
+
+– 如果托管节点上开启了SElinux,需要安装libselinux-python
+
+ 
+
+准备环境  6台服务器
+
+192.168.1.1   ansible       ###ansible  服务器
+192.168.1.2   web1         ###web 服务器
+192.168.1.3   web2         ###web 服务器
+192.168.1.4   db1            ###数据库 服务器
+192.168.1.5   db2            ###数据库 服务器
+192.168.1.6   cache        ###缓存 服务器
+
+ 
+
+安装ansible
+• ansible 可以基于源码运行
+• 源码安装
+– pip,需要配置扩展软件包源 extras
+– git
+yum install epel-release
+yum install git python2-pip
+– pip安装依赖模块
+pip install paramiko PyYAML Jinja2 httplib2 six
+
+ 
+
+安装ansible
+• yum 扩展源安装简单,自动解决依赖关系(推荐)
+– yum install ansible
+• 安装完成以后验证
+– ansible -version
+
+ 
+
+解压ansible的tar包：
+ tar -xf ansible_soft.tar.xz  
+
+  mkdir /var/ftp/ansible  
+
+cp ansible_soft/* /var/ftp/ansible  
+
+ cd /var/ftp/ansible 
+
+ createrepo ./    ###//////创建索引（有了索引yum源客户端才能使用） 
+
+ 
+
+ ansible 需要配置ansible软件包
+
+ vim /etc/yum.repos.d/local.repo 
+1
+2
+3
+4
+5
+[ansible]
+name=ansible
+baseurl=ftp://192.168.4.254/ansible    ####///上面ansible  YUM源的ip地址
+enabled=1
+gpgcheck=0
+　　
+
+安装
+
+yum -y install ansible
+
+ 
+
+查看版本
+
+ansible --version
+ 
+
+发送密钥 免密登录
+
+1
+for i in {2..6}; do ssh-copy-id 192.168.1.$i; done
+每次连接服务器都需要输入 yes  会干扰ansible  可以在 ssh 配置文件添加 
+
+vim /etc/ssh/ssh_config
+
+StrictHostKeyChecking no    
+
+systemctl restart sshd
+
+ 
+
+设置主机名解析：
+ vim /etc/hosts
+192.168.1.1   ansible       ###ansible  服务器
+192.168.1.2   web1         ###web 服务器
+192.168.1.3   web2         ###web 服务器
+192.168.1.4   db1            ###数据库 服务器
+192.168.1.5   db2            ###数据库 服务器
+192.168.1.6   cache        ###缓存 服务器
+
+ 
+
+把hosts配置文件同步到其他节点  域名解析
+
+ for i in {2..6}; do scp /etc/hosts 192.168.1.$i:/etc/; done
+ 
+
+ 
+
+关闭第一次使用ansible连接客户端是输入命令提示
+
+vim /etc/ansible/ansible.cfg
+
+ 
+
+host_key_checking = False 
+ 
+
+ 
+
+在ansible 配置文件添加管理的节点
+
+vim  /etc/ansible/hosts
+
+在末尾追加：
+[web]                      ####组
+web[1:2]                 ####放组内的服务器 名
+
+[db]      
+db1
+db2
+
+[other]
+cache
+[other] 
+cache ansible_ssh_user="root" ansible_ssh_pass="123"
+主机名                           登陆用户                        登陆密码
+
+ 
+
+进行测试
+
+1
+ansible  all   -m   shell    ping  
+# 操作 所有 组 ( all 为操作 hosts 文件中所有主机 )，-m 指定执行 ping 模块，下面是返回结果
+  192.168.12.129 | SUCCESS => { "changed": false, "ping": "pong" }
+# -i          指定 hosts 文件位置
+# -u username 指定 SSH 连接的用户名
+# -k          指定远程用户密码
+# -f          指定并发数
+# -s          如需要 root 权限执行时使用 ( 连接用户不是 root 时 )
+# -K          -s 时，-K 输入 root 密码
+ 
+
+　
+
+主机管理
+主机定义与分组
+• 安装好了 Ansible 之后就可以开始一些简单的任务了
+• Ansible配置文件查找顺序
+– 首先检测 ANSIBLE_CONFIG 变量定义的配置文件
+– 其次检查当前目彔下的 ./ansible.cfg 文件
+– 再次检查当前用户家目彔下 ~/ansible.cfg 文件
+– 最后检查 /etc/ansible/ansible.cfg 文件
+• /etc/ansible/ansible.cfg 默认配置文件路径
+
+主机定义与分组
+• ansible.cfg 配置文件
+– inventory 是定义托管主机地址配置文件
+– 首先编辑 /etc/ansible/hosts 文件,写入一些进程主机的地址。
+
+• 格式
+– # 表示注释
+[组名称]
+主机名称戒ip地址,登彔用户名,密码、端口等信息
+• 测试
+– ansible [组名称] --list-hosts
+
+• inventory 参数说明
+– 将要连接的进程主机名.与你想要设定的主机的别名不同的话,可通过此变量设置.
+– ansible_ssh_host
+
+– ssh端口号.如果不是默认的端口号,通过此变量设置.
+– ansible_ssh_port
+
+– 默认的 ssh 用户名
+– ansible_ssh_user
+
+• inventory 参数说明
+– ansible_ssh_pass
+– ssh 密码(这种方式并不安全,我们强烈建议使用 --ask-pass 或 SSH 密钥)
+– ansible_sudo_pass
+– sudo 密码(建议使用 --ask-sudo-pass)
+– ansible_sudo_exe (new in version 1.8)
+– sudo 命令路径(适用于1.8及以上版本)
+
+ 
+
+• inventory 参数说明
+– ansible_connection
+– 不主机的连接类型.比如:local, ssh 戒者 paramiko.Ansible 1.2以前默认使用 paramiko.1.2 以后默认使用                           'smart','smart' 方式会根据是否支持ControlPersist, 来判断'ssh' 方式是否可行.
+– ansible_ssh_private_key_file
+– ssh 使用的私钥文件.适用于有多个密钥,而你不想使用SSH 代理的情况.
+
+• inventory 参数说明
+– ansible_shell_type
+– 目标系统的shell类型.默认情况下,命令的执行使用 'sh' 诧法,可设置为 'csh' 戒 'fish'.
+– ansible_python_interpreter
+– 目标主机的 python 路径.适用亍的情况: 系统中有多个Python,或者命令路径不是"/usr/bin/python”
+
+ 
+
+• 分组定义、范围定义样例
+[web]
+web1
+web2
+
+[db]
+db[1:2]
+
+[cache]
+192.168.1.16
+
+[app1:children] 
+web
+db
+
+• 分组定义、范围定义样例
+[web]
+web[1:2]
+
+[web:vars]           子组
+ansible_ssh_user="root"
+ansible_ssh_pass="pwd“
+ansible_ssh_port="22"
+
+[nsd] 组名
+
+1
+cache  ansible_ssh_user="root" ansible_ssh_pass="pwd"
+  主机名                              登陆用户                            登陆密码
+
+ 
+
+• 自定义配置文件
+– 创建文件夹 myansible
+– 创建配置文件 ansible.cfg
+[defaults]
+inventory = myhost
+– 配置主机文件
+[nginx]
+192.168.1.11
+192.168.1.12
+192.168.1.13
+
+ 
+
+验证
+– ansible nginx --list-host
+
+ 
+
+Ansible 常用模块学习
+
+shell > ansible-doc -l # 列出 Ansible 支持的模块 shell > ansible-doc ping # 查看该模块帮助信息
+
+>> 远程命令模块（ command / script / shell ）
+command 作为 Ansible 的默认模块，可以运行远程权限范围所有的 shell 命令，不支持管道符。
+
+例：
+
+shell > ansible Client -m command -a "free -m"    # 查看 Client 分组主机内存使用情况
+ 
+
+script 的功能是在远程主机执行主控端存储的 shell 脚本文件，相当于 scp + shell 组合。
+
+例：
+
+1
+shell > ansible Client -m script -a "/home/test.sh 12 34" # 远程执行本地脚本
+　　
+
+shell 的功能是执行远程主机上的 shell 脚本文件，支持管道符。
+
+例：
+
+1
+shell > ansible Client -m shell -a "/home/test.sh" # 执行远程脚本
+　　
+
+>> copy 模块（实现主控端向目标主机拷贝文件，类似于 scp 功能）
+
+例：
+
+shell > ansible Client -m copy -a "src=/home/test.sh desc=/tmp/ owner=root group=root mode=0755"
+           # 向 Client 组中主机拷贝 test.sh 到 /tmp 下，属主、组为 root ，权限为 0755
+ 
+
+>> stat 模块（获取远程文件状态信息，atime/ctime/mtime/md5/uid/gid 等信息）
+例：
+
+shell > ansible Client -m stat -a "path=/etc/syctl.conf"
+ 
+
+>> get_url 模块（实现在远程主机下载指定 URL 到本地，支持 sha256sum 文件校验）
+
+例：
+
+shell > ansible Client -m get_utl -a "url=http://www.baidu.com dest=/tmp/index.html mode=0440 force=yes"
+ 
+
+>> yum 模块（软件包管理）
+
+例：
+
+shell > ansible Client -m yum -a "name=curl state=latest"
+ 
+
+>> cron 模块（远程主机 crontab 配置）
+
+例：
+
+shell > ansible Client -m cron -a "name='check dirs' hour='5,2' job='ls -alh > /dev/null'"
+ 
+
+效果：
+
+shell > ansible Client -m cron -a "name='check dirs' hour='5,2' job='ls -alh > /dev/null'"
+ 
+
+>> mount 模块（远程主机分区挂载）
+
+例：
+
+ansible Client -m mount -a "name=/mnt/data src=/dev/sd0 fstype=ext4 opts=ro state=present"
+ 
+
+>> service 模块（远程主机系统服务管理）
+
+例：
+
+shell > ansible Client -m service -a "name=nginx state=stoped" 
+shell > ansible Client -m service -a "name=nginx state=restarted" 
+shell > ansible Client -m service -a "name=nginx state=reloaded"
+ 
+
+>> user 服务模块（远程主机用户管理）
+
+例：
+
+shell > ansible Client -m user -a "name=wang comment='user wang'" 
+shell > ansible Client -m user -a "name=wang state=absent remove=yes" # 添加删除用户
+ 
+
+ 
+
+进行分组管理
+
+mkdir ansible
+
+cd  ansible/
+
+vim  ansible.cfg
+
+[defaults]
+
+inventory    =  myhost
+
+host_key_checking  =  False
+
+ 
+
+vim  myhost
+
+[app1]
+
+web1
+
+db1
+
+ 
+
+[app2]
+
+web2
+
+db2
+
+ 
+
+[app]
+
+cache
+
+ 
+
+ansible  app --list-host
+
+ansible  app1 --list-host
+
+ansible  app2 --list-hos
+
+ 
+
+动态主机
+• 无限可能
+– Ansible Inventory实际上是包含静态Inventory和动态Inventory两部分,静态Inventory指的是在文件
+
+   /etc/ansible/hosts中指定的主机和组,DynamicInventory指通过外部脚本获取主机列表,并按照ansible
+
+   所要求的格式返回给ansilbe命令的。
+
+
+• json
+– JSON的全称是”JavaScript Object Notation”,意思是JavaScript对象表示法,
+它是一种基亍文本,独立亍诧言的轻量级数据交换格式。
+
+
+• 注意事项:
+
+– 2、hostdata行,其中的"hosts" 部分可以省略,但如果使用时,必须是"hosts"
+
+ 
+
+动态主机
+• 脚本输出主机列表
+
+复制代码
+#!/usr/bin/python
+import json
+hostlist = {}          组ip
+hostlist["bb组名"] = ["192.168.1.15", "192.168.1.16"]
+hostlist["192.168.1.13"] = {
+  "ansible_ssh_user":"root","ansible_ssh_pass":"pwd"
+}
+hostlist["aa"] = {
+       "hosts" : ["192.168.1.11", "192.168.1.12"],
+       "vars" : {
+       "ansible_ssh_user":"root","ansible_ssh_pass":"pwd"
+}
+}
+print( json.dumps(hostlist))
+复制代码
+ 
+
+动态主机
+• 脚本输出样例
+
+复制代码
+/bin/bash/
+echo  {
+"aa" : {
+"hosts" : ["192.168.1.11", "192.168.1.12"],
+"vars" : {
+"ansible_ssh_user" : "root",
+"ansible_ssh_pass" : "pwd"
+}
+},
+"bb" : ["192.168.1.15", "192.168.1.16"],
+"192.168.1.13": { "ansible_ssh_user" : "root",
+"ansible_ssh_pass" : "pwd"}
+}
+复制代码
+ 
+
+批量执行
+ansible命令基础
+• ansible <host-pattern> [options]
+– host-pattern 主机戒定义的分组
+– -M 指定模块路径
+– -m 使用模块,默认 command 模块
+– -a or --args 模块参数
+– -i inventory 文件路径,戒可执行脚本
+– -k 使用交亏式登彔密码
+– -e 定义变量
+– -v 详绅信息,-vvvv 开吭 debug 模式
+
+
+• 列出要执行的主机,不执行任何操作
+
+1
+– ansible all --list-hosts
+　　
+
+• 批量检测主机
+
+1
+– ansible all -m ping
+
+• 批量执行命令
+
+1
+– ansible all -m command -a 'id' -k
+ 
+
+批量部署证书文件
+• 每次交亏输入密码比较麻烦
+• 密码写入配置文件安全性很差
+• 不同主机不同密码,配置文件要上天
+• 使用 key 方式认证,是一个不错的选择
+• 给所有主机部署公钥
+
+ansible all -m authorized_key -a "user=root exclusive=true manage_dir=true key='$(</root/.ssh/id_rsa.pub)'" -k -v
+ 
+
+ansible all     ##所有主机
+user=root     ##用户
+exclusive=true    ###强行写入
+manage_dir=true   ###没有就创建
+key= 密钥
+
+ 
+
+批量部署证书文件
+• 报错
+– "msg": "Using a SSH password instead of a key is not possible because Host Key checking is
+enabled and sshpass does not support this. Please add this host's fingerprint to your
+known_hosts file to manage this host."
+– 解决方法:
+– 修改 ansible.cfg
+
+host_key_checking = False
+ 
+
+ 
+
+批量配置管理
+模块
+• ansible-doc
+– 模块的手册,相当不 shell 的 man
+– 非常重要,非常重要,非常重要
+– ansible-doc -l   列出所有模块
+– ansible-doc modulename   查看帮劣
+• ping 模块
+– 测试网络连通性, ping模块没有参数
+– 注:测试 ssh 的连通性
+
+1
+– ansible host-pattern -m ping
+ 
+
+ 
+
+ 
+
+模块
+• command模块
+– 默认模块,进程执行命令
+– 用法
+
+– ansible host-pattern -m command -a '[args]'
+ 
+
+– 查看所有机器负载
+
+ansible all -m command -a 'uptime'
+ 
+
+– 查看日期和时间
+
+1
+ansible all -m command -a 'date +%F_%T'
+　　
+
+ 
+
+ 
+
+ 
+
+模块
+• command模块注意事项:
+– 该模块通过-a跟上要执行的命令可以直接执行,不过命令里如果有带有如下字符部分则执行不成功
+
+– "<", ">", "|", "&"
+ 
+
+– 该模块丌吭劢 shell 直接在 ssh 迚程中执行,所有使用到 shell 特性的命令执行都会失败
+– 下列命令执行会失败
+
+ansible all -m command -a 'ps aux|grep ssh'
+ansible all -m command -a 'set'
+ 
+
+模块
+• shell   |  raw 模块
+– shell 模块用法基本和command一样,区别是 shell模块是通过/bin/sh迚行执行命令,可以执行任意命令
+– raw模块,用法和shell 模块一样 ,可以执行任意命令
+– 区别是 raw 没有chdir、creates、removes参数
+– 执行以下命令查看结果
+
+ansible t1 -m command -a 'chdir=/tmp touch f1'
+ansible t1 -m shell -a 'chdir=/tmp touch f2'
+ansible t1 -m raw -a 'chdir=/tmp touch f3'
+ 
+
+模块
+• script模块
+– 复杂命令怎么办?
+– ansible 要上天
+– 直接在本地写脚本,然后使用 script 模块批量执行
+
+– ansible t1 -m script -a 'urscript'
+– 友情提示: 该脚本包含但不限于 shell 脚本,只要指定 Sha-bang 解释器的脚本都可运行
+
+ 
+
+实验
+
+使用ansible 给 web1 和 db1 添加用户和密码
+
+ansible web1,db1 -m shell -a "useradd zhang3 && echo 123456 |passwd --stdin zhang3 "
+ 
+
+ 
+
+使用ansible 给 web组的 添加 用户 lishi ，初始密码为 123 ，可以让第一次登入用户的时候需要改密码
+但是 web组内的有 zhangsan 的就不创建
+
+ 
+
+ansible web -m script -a "b.sh"
+ 
+
+ cat b.sh
+
+复制代码
+#!/bin/bash
+id zhang3
+   if [ $? == 0 ];then
+      exit
+else 
+     useradd lishi && echo 'passwd' |passwd --stdin 'lishi'
+     chage -d 0 lishi
+fi
+复制代码
+ 
+
+ 
+
+模块
+• copy 模块
+– 复制文件到进程主机
+– src:要复制到进程主机的文件在本地的地址,可以是绝对路径,也可以是相对路径。如果路径是一个目彔,它将递归复制。
+
+   在这种情况下,如果路径使用"/"来结尾,则只复制目录里的内容,如果没有使用"/"来结尾,则包含目彔在内的整个内容
+
+   全部复制,类似于rsync
+
+
+– dest:必选项。进程主机的绝对路径,如果源文件是一个目彔,那么该路径也必须是个目彔
+
+ 
+
+• copy 模块
+– backup:在覆盖之前将原文件备份,备份文件包含时间信息。有两个选项:yes|no
+– force:如果目标主机包含该文件,但内容不同,如果设置为yes,则强制覆盖,如果为no,
+   则只有当目标主机的目标位置不存在该文件时,才复制。默认为yes
+– 复制文件
+
+ansible t1 -m copy -a 'src=/root/alog dest=/root/a.log'
+ 
+
+– 复制目录
+
+ansible t1 -m copy -a 'src=urdir dest=/root/'
+ 
+
+ 
+
+模块
+• lineinfile | replace 模块
+– 类似 sed 的一种行编辑替换模块
+– path 目的文件
+– regexp 正则表达式
+– line 替换后的结果
+
+ansible t1 -m lineinfile -a 'path="/etc/selinux/config"  regexp="^SELINUX=" line="SELINUX=disabled"'
+ 
+
+– 替换指定字符
+
+ansible t1 -m replace -a 'path="/etc/selinux/config"  regexp="^(SELINUX=).*" replace="\1disabled"'
+ 
+
+ 
+
+模块
+• yum模块
+– 使用yum包管理器来管理软件包
+– config_file:yum的配置文件
+– disable_gpg_check:关闭gpg_check
+– disablerepo:不启用某个源
+– enablerepo:启用某个源
+– name:要迚行操作的软件包的名字,也可以传递一个url戒者一个本地的rpm包的路径
+– state:状态(present,absent,latest)
+
+ 
+
+• yum模块
+– 删除软件包
+
+ansible t1 -m yum -a 'name="lrzsz" state=absent'
+ 
+
+– 删除多个软件包
+
+ansible t1 -m yum -a 'name="lrzsz,lftp" state=absent'
+ 
+
+– 安装软件包
+
+ansible t1 -m yum -a 'name="lrzsz"'
+
+– 安装多个软件包
+
+ansible t1 -m yum -a 'name="lrzsz,lftp"'
+ 
+
+ 
+
+模块
+• service模块
+– name:必选项,服务名称
+– enabled:是否开机启动 yes|no
+– sleep:如果执行了restarted,在则stop和start之间沉睡几秒钟
+– state:对当前服务执行启动,停止、重启、重新加载等操作(started,stopped,restarted,reloaded)
+
+ansible t1 -m service -a 'name="sshd" enabled="yes" state="started"'
+ 
+
+ 
+
+模块
+• setup模块
+– 主要用亍获取主机信息,在playbooks里经常会用到的
+一个参数gather_facts就不该模块相关。setup模块下经常使用的一个参数是filter参数
+– filter 可以过滤到我们需要的信息
+
+ansible t1 -m setup -a 'filter=ansible_distribution'
+ 
+
+搭建个小实验
+
+– 安装 apache
+– 修改 apache 监听的端口为 8080
+– 为 apache 增加 ServerName 配置
+– 设置默认主页
+– 启动服务
+– 设置开机自启动
+
+ 
+
+1、给所有控制的服务器安装 apache 服务
+
+ansible all -m shell -a 'yum -y install httpd'
+ansible all -m shell -a 'systemctl restart httpd'
+ 
+
+2、 修改 apache 监听的端口为 8080
+
+ansible all -m lineinfile -a 'path="/etc/httpd/conf/httpd.conf" regexp="^Listen" line="Listen 8080"'
+ 
+
+3、 为 apache 增加 ServerName 配置
+
+ansible all -m lineinfile -a 'path="/etc/httpd/conf/httpd.conf" regexp="^#ServerName" line="ServerName www.zzc.com"'
+ 
+
+4、 设置默认主页
+
+ansible all -m shell -a "echo zhanzhichengnsd1804 > /var/www/html/index.html"
+ 
+
+5、 设置开机自启动
+
+ansible all -m service -a 'name="httpd" enabled="yes" state="restarted"'
+ 
+
+以下是都ansible 的一些操作
+
+复制代码
+ansible  all -m copy  -a 'src=/root/b.sh dest=/root/a.sh'
+
+ansible  all -m shell -a 'src=/etc/resolv.conf dest=/etc/resolv.conf'
+
+ansible  all -m shell -a 'cat  /etc/resolv.conf'
+
+ansible  all -m shell -a  "ifconfig eth0 |awk '{print \$2}'"
+
+ansible  all -m shell -a  "ifconfig eth0 |awk 'NR==2{print \$2}'"
+
+ansible  all -m shell -a  "ifconfig eth0 |awk 'NR==3{print \$2}'"
+
+ansible  all -m lineinfile -a 'path="/etc/sysconfig/network-scripts/ifcfg-eth0" regexp="^BOOT" line="BOOTPROTO=static"'
+
+
+ansible  all -m shell  -a "cat /etc/sysconfig/network-scripts/ifcfg-eth0"
+
+ansible  all -m lineinfile -a  'path="/etc/sysconfig/network-scripts/ifcfg-eth0" regexp="^BOOT" line="BOOTPROTO=none"'
+
+ansible  all -m shell      -a 'cat  /etc/sysconfig/network-scripts/ifcfg-eth0'  
+
+sed -n 'p'  /etc/sysconfig/network-scripts/ifcfg-eth0
+
+sed -i 's#none#atstic#p'  /etc/sysconfig/network-scripts/ifcfg-eth0 
+
+ansible  all -m  shell 'cat /etc/sysconfig/network-scripts/ifcfg-eth0'
+
+ansible  all -m  shell -a  'cat /etc/sysconfig/network-scripts/ifcfg-eth0'
+
+ansible  all -m  shell -a  'sed -i 's#none#atstic#p'  /etc/sysconfig/network-scripts/ifcfg-eth0'
+
+
+ansible  all -m  shell -a   'cat /etc/sysconfig/network-scripts/ifcfg-eth0'
+
+ansible  cache -m replace -a 'path="/etc/selinux/config" regexp="^(SELINUX=).*" replace="\1disabled"'
+
+
+ansible  cache -m shell  -a 'cat  /etc/selinux/config'
+
+
+ansible  all -m yum  -a "name=lrzsz,lftp"
+
+
+ansible  all -m shell  -a "rpm -qa lrzsz,lftp"
+
+ansible  all -m shell  -a "rpm -qa lrzsz  lftp"
+
+
+ansible  all -m shell  -a "rpm  -qa  httpd"
+
+
+ansible  all -m shell  -a "echo zhanzhichengnsd1804 > /var/www/html/index.html"
+
+ansible  all -m shell  -a  "ifconfig eth0|awk 'NR==2{print \$2}'"
+
+ansible  all -m shell - a  "ifconfig eth0|awk 'NR==2{print \$2,\"www.zzc.com\"}'>> /etc/hosts "
+
+
+ansible  all -m service -a 'name="httpd"  enabled="yes" state="started"'
+
+
+ansible  all -m service -a 'name="httpd"  enabled="yes" state="restarted"'
+ 
+
+ 
+复制代码
+ 
+
+ 
+
+ 
+
+END    ！！！！！！！！！
+
+好文要顶 关注我 收藏该文    
+zzclog
+关注 - 3
+粉丝 - 1
++加关注
+0 0
+« 上一篇：Haproxy 概述及搭建
+» 下一篇：Openstack操作基础
+posted @ 2018-09-06 20:34 zzclog 阅读(55) 评论(0) 编辑 收藏
+刷新评论刷新页面返回顶部
+注册用户登录后才能发表评论，请 登录 或 注册，访问网站首页。
+【推荐】超50万VC++源码: 大型组态工控、电力仿真CAD与GIS源码库！
+【活动】华为云12.12会员节 云产品1折起 满额送Mate20 点击抢购
+【推荐】服务器100%基准CPU性能，1核1G首年168元，限时特惠！
+腾讯云1129
+相关博文：
+· 自动化运维工具Ansible
+· Ansible 运维自动化 ( 配置管理工具 )
+· 自动化运维工具 Ansible
+· 自动化运维工具之ansible
+· Ansible自动化运维工具-上
+
+热门推荐：
+· 我去暗网里转了转（慎入）
+· Python：lambda表达式(匿名函数)
+· HTML中<input>和<textarea>的区别
+· visio2013激活软件,绝对靠谱!!!-亲测有效
+· IDEA 2018 最新激活码 License server
+昵称：zzclog
+园龄：4个月
+粉丝：1
+关注：3
++加关注
+<	2018年12月	>
+日	一	二	三	四	五	六
+25	26	27	28	29	30	1
+2	3	4	5	6	7	8
+9	10	11	12	13	14	15
+16	17	18	19	20	21	22
+23	24	25	26	27	28	29
+30	31	1	2	3	4	5
+搜索
+
+ 找找看
+
+ 谷歌搜索
+常用链接
+我的随笔
+我的评论
+我的参与
+最新评论
+我的标签
+随笔档案
+2018年9月 (10)
+阅读排行榜
+1. Ansible运维自动化(配置管理工具)(55)
+2. 大数据与Hadoop(42)
+3. kafka原理和集群(30)
+4. Openstack操作基础(28)
+5. Openstack概述与搭建(23)
+Copyright ©2018 zzclog
+
+
+
+
+https://www.cnblogs.com/zzc-log/p/9600794.html
